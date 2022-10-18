@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+	<title>Time Snake</title>
+	<style>
+		body {
+			background-color: black;
+			cursor: crosshair;
+			text-align: center;
+			font-size: 50px;
+			margin: 0;
+			overflow: hidden; /* Hide scrollbars */
+		}
+
+		@media only screen and (max-width: 1026px) {
+			p {
+				display: none;
+			}
+		}
+
+		.blink_me {
+			animation: blinker 2s linear infinite;
+		}
+
+		@keyframes blinker {
+			50% {
+				opacity: 0;
+			}
+		}
+
+		.center {
+			margin: auto;
+			width: 50%;
+			padding: 10px;
+		}
+	</style>
+</head>
+	<body onload="startTime();">
+		<div style="font-size: 150%; color: red; text-shadow: 2px 2px blue; background-color: black; padding-top: 30px; " id="txt"></div>
+		<script>
+		function startTime()
+		{
+			const today = new Date();
+			let h = today.getHours();
+			let m = today.getMinutes();
+			let s = today.getSeconds();
+			m = checkTime(m);
+			s = checkTime(s);
+			document.getElementById('txt').innerHTML =  h + ":" + m + ":" + s;
+			setTimeout(startTime, 1000);
+		}
+
+		function checkTime(i)
+		{
+			if (i < 10) {i = "0" + i};  //add zero in front of numbers < 10
+			return i;
+		}
+		</script>
+
+	<div style="color:red; background-color: black;">
+		<p style="font-size: 85%; color: purple;">Your computer is trying hard to get that apple...<br />
+		<strong style="color: red; text-shadow: 2px 2px purple;" class="blink_me">Use the <em>W/A/S/D</em> keys to help it out.<br /></strong>
+		If you give up, your computer will take over again.</p>
+		<canvas id="gc" width="400" height="400" style="outline: 2px dashed blue;"></canvas>
+		<script>
+			startTime();
+
+			window.onload = function()
+			{
+				canv = document.getElementById("gc");
+				ctx = canv.getContext("2d");
+				document.addEventListener("keydown", keyPush);
+				setInterval(game, 1000 / 15);
+			}
+
+			px = py = 10;
+			gs = tc = 20;
+			ax = ay = 15;
+			xv = yv = 0;
+			trail = [];
+			tail = 5;
+
+			count = 50; //timeout counter if player stops input
+			previousKey = 's';
+
+			var Apple_Eaten = new Audio('Sounds/Apple Eaten.wav');
+            var Death = new Audio('Sounds/Death.wav');
+			var Direction_Change = new Audio('Sounds/Direction Change.wav');
+
+			function game()
+			{
+				px += xv;
+				py += yv;
+	
+				if (px < 0)
+				{
+					px = tc-1;
+				}
+				if (px > tc-1)
+				{
+					px = 0;
+				}
+				if (py < 0)
+				{
+					py = tc-1;
+				}
+				if (py > tc-1)
+				{
+					py = 0;
+				}
+
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, canv.width, canv.height);
+
+				ctx.fillStyle = "lime";
+				for (var i = 0; i < trail.length; i++)
+				{
+					ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs-2, gs-2);
+					if (trail[i].x == px && trail[i].y == py)
+					{
+						Death.play();
+						ctx.fillStyle = "white";
+						ctx.fillRect(0, 0, canv.width, canv.height);
+						ctx.fillStyle = "blue";
+						tail = 5
+					}
+				}
+	
+				trail.push({x:px, y:py});
+				while (trail.length > tail)
+				{
+					trail.shift();
+				}
+
+				if (ax == px && ay == py)
+				{
+					Apple_Eaten.play();
+					tail++;
+					ax = Math.floor(Math.random() * tc);
+					ay = Math.floor(Math.random() * tc);
+					//when gets apple while in autoplay, wait 5 ticks to move again
+					if (count > 50)
+						count = 45;
+				}
+				ctx.fillStyle = "red";
+				ctx.fillRect(ax*gs, ay*gs, gs-2, gs-2);
+
+				if (count > 100)
+					count = 50;
+				count++; //if player stopped playing for 50 ticks
+                if (count >= 50) //the computer is taking over!
+				{
+                    if (ax < px && previousKey != 'd') //left
+					{
+						if (previousKey != 'a')
+							Direction_Change.play();
+
+                        previousKey = 'a';
+						xv = -1;
+						yv = 0;
+					}
+                    else if (ay < py && previousKey != 'w') //down
+					{
+                        if (previousKey != 's')
+							Direction_Change.play();
+
+                        previousKey = 's';
+                        xv = 0;
+						yv = -1;
+					}
+                    else if (ax > px && previousKey != 'a') //right
+					{
+						if (previousKey != 'd')
+							Direction_Change.play();
+
+                        previousKey = 'd';
+						xv = 1;
+						yv = 0;
+					}
+                    else //up
+					{
+						if (previousKey != 'w')
+							Direction_Change.play();
+
+                        previousKey = 'w';
+						if (previousKey != 's')
+						{
+							xv = 0;
+							yv = 1;
+						}
+					}
+				}
+			}
+
+			function keyPush(evt)
+			{
+                Direction_Change.play();
+				switch (evt.keyCode)
+				{
+					case 65: //left arrow key 37
+						xv = -1; yv = 0;
+						count = 0;
+						break;
+					case 87: //down arrow key 38
+						xv = 0; yv = -1;
+						count = 0;
+						break;
+					case 68: //right arrow key 39
+						xv = 1; yv = 0;
+						count = 0;
+						break;
+					case 83: //up arrow key 40
+						xv = 0; yv = 1;
+						count = 0;
+						break;
+				}
+			}
+			</script>
+		</div>
+	</body>
+</html>

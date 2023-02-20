@@ -198,19 +198,36 @@
                 Direction_Change.play();
 				switch (evt.keyCode)
 				{
-					case 65: //left arrow key 37
+					case 65: //left arrow key a
 						xv = -1; yv = 0;
 						count = 0;
 						break;
-					case 87: //down arrow key 38
+					case 87: //down arrow key s
 						xv = 0; yv = -1;
 						count = 0;
 						break;
-					case 68: //right arrow key 39
+					case 68: //right arrow key d
 						xv = 1; yv = 0;
 						count = 0;
 						break;
-					case 83: //up arrow key 40
+					case 83: //up arrow key w
+						xv = 0; yv = 1;
+						count = 0;
+						break;
+
+					case 37: //left arrow
+						xv = -1; yv = 0;
+						count = 0;
+						break;
+					case 38: //down arrow
+						xv = 0; yv = -1;
+						count = 0;
+						break;
+					case 39: //right arrow
+						xv = 1; yv = 0;
+						count = 0;
+						break;
+					case 40: //up arrow
 						xv = 0; yv = 1;
 						count = 0;
 						break;
